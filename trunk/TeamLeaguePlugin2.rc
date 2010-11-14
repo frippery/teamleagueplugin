@@ -1,0 +1,109 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG1 DIALOGEX 0, 0, 370, 305
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "TeamLeague plugin settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,258,284,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,312,284,50,14
+    GROUPBOX        "Favorite teams",IDC_STATIC,6,7,180,275
+    CONTROL         "",IDC_TREE_FAVORITES,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | WS_BORDER | WS_TABSTOP,12,18,168,258
+    GROUPBOX        "Game times",IDC_STATIC,191,7,171,47
+    CONTROL         "Show local time",IDC_RADIO_TIME_LOCAL,"Button",BS_AUTORADIOBUTTON,198,18,162,10
+    CONTROL         "Show FICS time",IDC_RADIO_TIME_FICS,"Button",BS_AUTORADIOBUTTON,198,30,162,10
+    CONTROL         "Show relative time",IDC_RADIO_TIME_RELATIVE,"Button",BS_AUTORADIOBUTTON,198,42,162,10
+    GROUPBOX        "Auto-update",IDC_STATIC,191,54,171,36
+    CONTROL         "Autocatically update data on logging on",IDC_CHECK_UPDATE_LOGON,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,198,66,143,10
+    CONTROL         "Update every",IDC_CHECK_UPDATE_EVERY,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,198,78,56,10
+    EDITTEXT        IDC_EDIT_UPDATE_INTERVAL,256,76,21,12,ES_NUMBER | WS_DISABLED
+    LTEXT           "minutes",IDC_STATIC,282,78,26,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 362
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 298
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
