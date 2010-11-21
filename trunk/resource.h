@@ -9,9 +9,11 @@
 #define IDC_RADIO_TIME_RELATIVE         1005
 #define IDC_CHECK_UPDATE_LOGON          1007
 #define IDC_CHECK_UPDATE_EVERY          1008
-#define IDC_EDIT1                       1009
 #define IDC_EDIT_UPDATE_INTERVAL        1009
-#define IDC_STATIC                      -1
+#define IDC_CHECK_PLAY_SOUND            1010
+#define IDC_BUTTON_BROWSESOUND          1011
+#define IDC_CHECK_PLAY_ONLY_FAVORITES   1012
+#define IDC_TESTSOUND                   1014
 
 // Next default values for new objects
 // 
@@ -19,7 +21,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        102
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1010
+#define _APS_NEXT_CONTROL_VALUE         1015
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

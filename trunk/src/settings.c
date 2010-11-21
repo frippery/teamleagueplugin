@@ -31,6 +31,7 @@ typedef struct
 
 	BOOL wasValid;
 	wchar_t confFileName[CONFIG_MAX_CONFIG_PATHNAME_LENGTH];
+	wchar_t playSoundFileName[CONFIG_MAX_CONFIG_PATHNAME_LENGTH];
 } Settings_Internal_t;
 
 static Settings_t g_settings;
@@ -86,6 +87,7 @@ static void Settings_PopulateDefault()
 	g_settings.updateOnLogon = TRUE;
 	g_settings.updatePeriod = 0;
 	g_settings.showFavoritesOnly = TRUE;
+	g_settings.playSoundOnlyForFavorites = TRUE;
 }
 
 static Status_t Settings_Load()
@@ -273,6 +275,10 @@ static void Settings_UnpopulateDlg(HWND hwnd)
 		g_settings.updatePeriod = 0;
 	}
 
+	memcpy(g_settings.playSoundFileName, g_setInternal.playSoundFileName, sizeof(g_settings.playSoundFileName));
+	g_settings.playSoundWhenGameStarts = IsDlgButtonChecked(hwnd, IDC_CHECK_PLAY_SOUND);
+	g_settings.playSoundOnlyForFavorites = IsDlgButtonChecked(hwnd, IDC_CHECK_PLAY_ONLY_FAVORITES);
+
 	if (g_setInternal.wasValid)
 	{
 		g_settings.favoriteTeamsCount = 0;
@@ -325,6 +331,7 @@ static void Settings_PopulateDlg(HWND hwnd)
 	g_setInternal.wasValid = data->isDataValid;
 	g_setInternal.teamsCount = 0;
 	g_setInternal.sectionCount = 0;
+	memcpy(g_setInternal.playSoundFileName, g_settings.playSoundFileName, sizeof(g_settings.playSoundFileName));
 
 	if (g_setInternal.wasValid)
 	{
@@ -335,7 +342,11 @@ static void Settings_PopulateDlg(HWND hwnd)
 			Settings_Internal_InsertTeam(favoritesHwnd, data->teamGames[i].team2, data->teamGames[i].secton);
 		}
 	}
-	
+
+	CheckDlgButton(hwnd, IDC_CHECK_PLAY_SOUND, g_settings.playSoundWhenGameStarts);
+	CheckDlgButton(hwnd, IDC_CHECK_PLAY_ONLY_FAVORITES, g_settings.playSoundOnlyForFavorites);
+	EnableWindow(GetDlgItem(hwnd, IDC_CHECK_PLAY_ONLY_FAVORITES), IsDlgButtonChecked(hwnd, IDC_CHECK_PLAY_SOUND));
+	EnableWindow(GetDlgItem(hwnd, IDC_TESTSOUND), IsDlgButtonChecked(hwnd, IDC_CHECK_PLAY_SOUND) && g_setInternal.playSoundFileName[0] != L'\0');
 }
 
 static INT_PTR CALLBACK Settings_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -361,7 +372,46 @@ static INT_PTR CALLBACK Settings_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wPar
 				EndDialog(hwndDlg, id);
 				return TRUE;
 			case IDC_CHECK_UPDATE_EVERY:
-				SendDlgItemMessage(hwndDlg, IDC_EDIT_UPDATE_INTERVAL, WM_ENABLE, (WPARAM)IsDlgButtonChecked(hwndDlg, IDC_CHECK_UPDATE_EVERY), 0);
+				EnableWindow(GetDlgItem(hwndDlg, IDC_EDIT_UPDATE_INTERVAL), IsDlgButtonChecked(hwndDlg, IDC_CHECK_UPDATE_EVERY));
+				return TRUE;
+			case IDC_BUTTON_BROWSESOUND:
+				{
+					OPENFILENAME openFileName;
+					wchar_t fileName[CONFIG_MAX_CONFIG_PATHNAME_LENGTH] = {L'\0'};
+					openFileName.lStructSize = sizeof(openFileName);
+					openFileName.hwndOwner = hwndDlg;
+					openFileName.hInstance = NULL;
+					openFileName.lpstrFilter = L"Sound Files (*.wav)\0*.WAV\0All Files (*.*)\0*.*\0";
+					openFileName.lpstrCustomFilter = NULL;
+					openFileName.nMaxCustFilter = 0;
+					openFileName.nFilterIndex = 0;
+					openFileName.lpstrFile = fileName;
+					openFileName.nMaxFile = CONFIG_MAX_CONFIG_PATHNAME_LENGTH;
+					openFileName.lpstrFileTitle = NULL;
+					openFileName.nMaxFileTitle = 0;
+					openFileName.lpstrInitialDir = NULL;
+					openFileName.lpstrTitle = NULL;
+					openFileName.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_LONGNAMES | OFN_PATHMUSTEXIST;
+					openFileName.nFileOffset = 0;
+					openFileName.nFileExtension = 0;
+					openFileName.lpstrDefExt = NULL;
+					openFileName.lCustData = 0;
+					if (GetOpenFileName(&openFileName))
+					{
+						memcpy(g_setInternal.playSoundFileName, fileName, CONFIG_MAX_CONFIG_PATHNAME_LENGTH);
+						CheckDlgButton(hwndDlg, IDC_CHECK_PLAY_SOUND, TRUE);
+					}
+					else
+					{
+						return TRUE;
+					}
+				}
+			case IDC_CHECK_PLAY_SOUND: // Fall through
+				EnableWindow(GetDlgItem(hwndDlg, IDC_CHECK_PLAY_ONLY_FAVORITES), IsDlgButtonChecked(hwndDlg, IDC_CHECK_PLAY_SOUND));
+				EnableWindow(GetDlgItem(hwndDlg, IDC_TESTSOUND), IsDlgButtonChecked(hwndDlg, IDC_CHECK_PLAY_SOUND) && g_setInternal.playSoundFileName[0] != L'\0');
+				return TRUE;
+			case IDC_TESTSOUND:
+				PlaySound(g_setInternal.playSoundFileName, NULL, SND_ASYNC | SND_FILENAME);
 				return TRUE;
 			}
 			return FALSE;
@@ -378,4 +428,5 @@ void Settings_DoDialog()
 		Settings_Store();
 		Tabset_Event(TABEVENT_CONFIG_CHANGED);
 	}
+	PlaySound(NULL, NULL, SND_ASYNC);
 }
