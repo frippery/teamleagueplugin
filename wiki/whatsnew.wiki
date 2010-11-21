@@ -5,6 +5,10 @@
   * `[!]` Major bug
   * `[*]` Minor bug
 
+== Revision 13 (Nov 21 2010) ==
+  * `[+]` Added feature to play sound when new game starts
+  * `[+]` Added installer
+
 == Revision 12 (Jun 11 2009) ==
   * `[*]` Team games which are "won or drawn" were shown in green color (as won).
 
