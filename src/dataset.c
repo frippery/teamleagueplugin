@@ -409,6 +409,11 @@ BOOL Dataset_ProcessHotData(const char* msg)
 			Engine_SendCommand(buf);
 		}
 #endif
+		if (Settings_GetSettings()->playSoundWhenGameStarts && 
+			(!Settings_GetSettings()->playSoundOnlyForFavorites || Settings_IsTeamFavorite(team1) || Settings_IsTeamFavorite(team2)))
+		{
+			PlaySound(Settings_GetSettings()->playSoundFileName, NULL, SND_ASYNC | SND_FILENAME);
+		}
 	}
 
 	if (statusToSet != GAMESTATUS_Error)

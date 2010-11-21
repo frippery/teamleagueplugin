@@ -26,6 +26,10 @@ typedef struct
 	int curRoundsNum;
 
 	BOOL showFavoritesOnly;
+
+	BOOL playSoundWhenGameStarts;
+	BOOL playSoundOnlyForFavorites;
+	wchar_t playSoundFileName[CONFIG_MAX_CONFIG_PATHNAME_LENGTH];
 } Settings_t;
 
 void Settings_DoDialog();
