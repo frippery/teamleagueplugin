@@ -417,8 +417,8 @@ void Tab_Common_DoPaint(HWND hwnd, PaintDCFunc_t func)
 
 
 	dc = CreateCompatibleDC(ps.hdc);
-	hbitmap = CreateCompatibleBitmap(ps.hdc, clientRect.right-clientRect.left, clientRect.bottom - clientRect.top);
-	hbitmap = SelectObject(dc, hbitmap);
+	hbitmap = (HBITMAP)CreateCompatibleBitmap(ps.hdc, clientRect.right-clientRect.left, clientRect.bottom - clientRect.top);
+	hbitmap = (HBITMAP)SelectObject(dc, hbitmap);
 
 	{
 		TabSet_ColorStyle_t oldStyle;
@@ -449,7 +449,7 @@ void Tab_Common_DoPaint(HWND hwnd, PaintDCFunc_t func)
 	BitBlt(ps.hdc, clientRect.left, clientRect.top, clientRect.right-clientRect.left, clientRect.bottom - clientRect.top,
 		dc, 0, 0, SRCCOPY);
 
-	hbitmap = SelectObject(dc, hbitmap);
+	hbitmap = (HBITMAP)SelectObject(dc, hbitmap);
 	DeleteObject(hbitmap);
 	DeleteObject(dc);
 

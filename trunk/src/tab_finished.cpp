@@ -680,7 +680,7 @@ static Status_t Tab_Finished_Event(TabEvent_t event)
 
 static Status_t Tab_Finished_Create(HWND parent, HWND* child)
 {
-	g_tab = malloc(sizeof(Tab_Finished_t));
+	g_tab = (Tab_Finished_t *)malloc(sizeof(Tab_Finished_t));
 	if (!g_tab)
 	{
 		return STATUS_ERR_NOT_ENOUGH_ROOM;

@@ -46,8 +46,7 @@ void Engine_SendCommand(const char* command)
 
 void Engine_RequestData()
 {
-	if (Engine_IsOnline() && !Dataset_GetDataset()->isUpdateInProgress);
-	{
+	if (Engine_IsOnline() && !Dataset_GetDataset()->isUpdateInProgress)	{
 #ifdef SHOW_SPECIFIC_SEASON
 		Engine_SendCommand(TEAMLEAGUE_CMD("botpairings " SHOW_SPECIFIC_SEASON));
 #else
@@ -125,7 +124,7 @@ _declspec(dllexport) void _cdecl BCP_DeInitialize()
 
 _declspec(dllexport) void _cdecl BCP_GetDispatchTable(void *pTable)
 {
-	Engine_SetDispatchTable(pTable);
+	Engine_SetDispatchTable((BABASCHESS_DISPATCH_V_1_4 *) pTable);
 }
 
 _declspec(dllexport) void _cdecl BCP_OnLogOn()

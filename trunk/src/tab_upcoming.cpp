@@ -506,7 +506,7 @@ static Status_t Tab_Upcoming_UpdateData()
 		}
 	}
 
-	qsort_s(g_tab->games, g_tab->gameCount, sizeof(g_tab->games[0]), Tab_Upcoming_CmpTime, 0);
+	qsort_s(g_tab->games, g_tab->gameCount, sizeof(g_tab->games[0]), (int (__cdecl *)(void *,const void *,const void *))Tab_Upcoming_CmpTime, 0);
 	return STATUS_OK;
 }
 
@@ -705,8 +705,10 @@ static Status_t Tab_Upcoming_Event(TabEvent_t event)
 
 			Tab_Upcoming_UpdateScrollBar();
 			Tab_Upcoming_UpdateCheckBox();
+        }
 
 	case TABEVENT_MINUTE_CHANGED: // Fall though
+        {
 			{
 				RECT rect;
  				GetClientRect(g_tab->hwnd, &rect); 
@@ -723,7 +725,7 @@ static Status_t Tab_Upcoming_Event(TabEvent_t event)
  
 static Status_t Tab_Upcoming_Create(HWND parent, HWND* child)
 {
- 	g_tab = malloc(sizeof(Tab_Upcoming_t));
+ 	g_tab = (Tab_Upcoming_t *)malloc(sizeof(Tab_Upcoming_t));
  	if (!g_tab)
  	{
  		return STATUS_ERR_NOT_ENOUGH_ROOM;

@@ -282,7 +282,7 @@ static Status_t Tab_NotScheduled_Event(TabEvent_t event)
 
 static Status_t Tab_NotScheduled_Create(HWND parent, HWND* child)
 {
-	g_tab = malloc(sizeof(Tab_NotScheduled_t));
+	g_tab = (Tab_NotScheduled_t*)malloc(sizeof(Tab_NotScheduled_t));
 	if (!g_tab)
 	{
 		return STATUS_ERR_NOT_ENOUGH_ROOM;

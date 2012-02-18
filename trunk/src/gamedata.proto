@@ -1,0 +1,40 @@
+enum GameStatus_p {
+  GAMESTATUS_NotScheduled      = 0;
+  GAMESTATUS_Pending           = 1;
+  GAMESTATUS_InProgress        = 2;
+  GAMESTATUS_Adjourned         = 3;
+
+  GAMESTATUS_Win_1_0           = 4;
+  GAMESTATUS_Win_i_o           = 5;
+  GAMESTATUS_Win_plus_minus    = 6;
+  GAMESTATUS_Lose_0_1          = 7;
+  GAMESTATUS_Lose_o_i          = 8;
+  GAMESTATUS_Lose_minus_plus   = 9;
+  GAMESTATUS_Draw_12_12        = 10;
+  GAMESTATUS_Draw_i2_i2        = 11;
+  GAMESTATUS_DoubleForfeit_o_o = 12;
+  GAMESTATUS_DoubleForfeit_minus_minus = 13;
+  GAMESTATUS_Error = 14;
+};
+
+message Game_p {
+  required int32 game_id = 1;
+  required string player1 = 2;
+  required string player2 = 3;
+  required GameStatus_p statue = 4;
+  optional fixed64 scheduled_time = 5;
+  required bool is_player1_white = 6;
+};
+
+message TeamGame_p {
+  required int32 round = 1;
+  required string section = 2;
+  required string team1 = 3;
+  required string team2 = 4;
+  repeated Game_p team_games = 5;
+};
+
+message Season_p
+{
+  repeated TeamGame_p team_games = 1;
+};
