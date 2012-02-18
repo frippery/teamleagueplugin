@@ -694,7 +694,7 @@ static Status_t Tab_Standings_UpdateData()
 		return STATUS_OK;
 	}
 
-	sections = malloc(sizeof(g_tab->sections));
+	sections = (Tab_Standings_Section_t *)malloc(sizeof(g_tab->sections));
 	memset(sections, 0, sizeof(g_tab->sections));
 
 	for(i = 0; i < dataSet->teamGameCount; ++i)
@@ -870,7 +870,7 @@ static Status_t Tab_Standings_UpdateData()
 			indices[j] = j;
 		}
 
-		qsort_s(indices, srcSection->teamCount, sizeof(indices[0]), Tab_Standings_CmpTeams, srcSection);
+        qsort_s(indices, srcSection->teamCount, sizeof(indices[0]), (int (__cdecl *)(void *,const void *,const void *))Tab_Standings_CmpTeams, srcSection);
 
 		for(j = 0; j < srcSection->teamCount; ++j)
 		{
@@ -904,13 +904,14 @@ static Status_t Tab_Standings_Event(TabEvent_t event)
 	case TABEVENT_DATA_UPDATED:
 		{
 			Status_t status = Tab_Standings_UpdateData();
-			RECT rect;
 			if (status != STATUS_OK)
 			{
 				return status;
 			}
+        }
 	case TABEVENT_CONFIG_CHANGED: // Fall through
-
+        {
+			RECT rect;
 			GetClientRect(g_tab->hwnd, &rect); 
 			InvalidateRect(g_tab->hwnd, &rect, TRUE); // TODO make in false
 			Tab_Standings_UpdateDropDown();
@@ -925,7 +926,7 @@ static Status_t Tab_Standings_Event(TabEvent_t event)
 
 static Status_t Tab_Standings_Create(HWND parent, HWND* child)
 {
-	g_tab = malloc(sizeof(Tab_Standings_t));
+	g_tab = (Tab_Standings_t*)malloc(sizeof(Tab_Standings_t));
 	if (!g_tab)
 	{
 		return STATUS_ERR_NOT_ENOUGH_ROOM;

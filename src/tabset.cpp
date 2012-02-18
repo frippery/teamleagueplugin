@@ -63,8 +63,8 @@ void Tabset_SelectStyle(HDC hdc, const TabSet_ColorStyle_t* style, TabSet_ColorS
 {
 	if (styleToStore)
 	{
-		styleToStore->border	= SelectObject(hdc, style->border);
-		styleToStore->brush		= SelectObject(hdc, style->brush);
+		styleToStore->border	= (HPEN)SelectObject(hdc, style->border);
+		styleToStore->brush		= (HBRUSH)SelectObject(hdc, style->brush);
 		styleToStore->fontColor = SetTextColor(hdc, style->fontColor);
 	}
 	else
@@ -97,8 +97,8 @@ static void TabSet_InitGdiCollection()
 	TabSet_CreateColorStyle(&g_tabSet.collection.pourOrBadCell, CONFIG_COLOR_POURORBAD, CONFIG_COLOR_PEN, CONFIG_COLOR_PEN);
 	TabSet_CreateColorStyle(&g_tabSet.collection.pourOrGoodCell, CONFIG_COLOR_GOODORPOUR, CONFIG_COLOR_PEN, CONFIG_COLOR_PEN);
 	TabSet_CreateColorStyle(&g_tabSet.collection.neutralCell, g_tabSet.collection.bgColor, g_tabSet.collection.fgColor, g_tabSet.collection.fgColor);
-	g_tabSet.collection.normalFont = GetStockObject(DEFAULT_GUI_FONT);
-	g_tabSet.collection.headerFont = GetStockObject(DEFAULT_GUI_FONT);
+	g_tabSet.collection.normalFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+	g_tabSet.collection.headerFont = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
 }
 
 static void TabSet_DestroyGdiCollection()
