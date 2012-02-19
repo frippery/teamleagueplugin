@@ -1,21 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TeamLeaguePlugin2", "TeamLeaguePlugin2.vcxproj", "{F6326537-A754-49A4-A827-1CF3308CF873}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TeamLeaguePlugin2", "TeamLeaguePlugin2.vcxproj", "{A5B9837A-2E1B-4E81-837A-D4AA52CF77C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
-		Release static|Win32 = Release static|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{F6326537-A754-49A4-A827-1CF3308CF873}.Debug|Win32.ActiveCfg = Debug|Win32
-		{F6326537-A754-49A4-A827-1CF3308CF873}.Debug|Win32.Build.0 = Debug|Win32
-		{F6326537-A754-49A4-A827-1CF3308CF873}.Release static|Win32.ActiveCfg = Release static|Win32
-		{F6326537-A754-49A4-A827-1CF3308CF873}.Release static|Win32.Build.0 = Release static|Win32
-		{F6326537-A754-49A4-A827-1CF3308CF873}.Release|Win32.ActiveCfg = Release|Win32
-		{F6326537-A754-49A4-A827-1CF3308CF873}.Release|Win32.Build.0 = Release|Win32
+		{A5B9837A-2E1B-4E81-837A-D4AA52CF77C4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A5B9837A-2E1B-4E81-837A-D4AA52CF77C4}.Debug|Win32.Build.0 = Debug|Win32
+		{A5B9837A-2E1B-4E81-837A-D4AA52CF77C4}.Release|Win32.ActiveCfg = Release|Win32
+		{A5B9837A-2E1B-4E81-837A-D4AA52CF77C4}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
