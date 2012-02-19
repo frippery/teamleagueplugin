@@ -39,32 +39,44 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetExt>.BCPlugin</TargetExt>
+    <OutDir>D:\usr\BabasChess1</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetExt>.BCPlugin</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TEAMLEAGUEPLUGIN2_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CustomBuild>
+      <Command>D:\Dev\Tools\protobuf\protobuf.exe --cpp_out=$(ProjectDir) --proto_path=$(ProjectDir) %(FullPath)</Command>
+      <Message>Compiling protocol buffers</Message>
+      <Outputs>.\%(Filename).pb.cc;.\%(Filename).pb.h</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TEAMLEAGUEPLUGIN2_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -72,8 +84,46 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <CustomBuild>
+      <Command>D:\Dev\Tools\protobuf\protobuf.exe --cpp_out=$(ProjectDir) --proto_path=$(ProjectDir) %(FullPath)</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Message>Compiling protocol buffers</Message>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>.\%(Filename).pb.cc;.\%(Filename).pb.h</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="src\config.h" />
+    <ClInclude Include="src\dataset.h" />
+    <ClInclude Include="src\engine.h" />
+    <ClInclude Include="src\globals.h" />
+    <ClInclude Include="src\settings.h" />
+    <ClInclude Include="src\status.h" />
+    <ClInclude Include="src\tabset.h" />
+    <ClInclude Include="src\tab_common.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\dataset.cpp" />
+    <ClCompile Include="src\engine.cpp" />
+    <ClCompile Include="src\settings.cpp" />
+    <ClCompile Include="src\tabset.cpp" />
+    <ClCompile Include="src\tab_common.cpp" />
+    <ClCompile Include="src\tab_current.cpp" />
+    <ClCompile Include="src\tab_finished.cpp" />
+    <ClCompile Include="src\tab_notscheduled.cpp" />
+    <ClCompile Include="src\tab_standings.cpp" />
+    <ClCompile Include="src\tab_upcoming.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\gamedata.proto">
+      <FileType>Document</FileType>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="TeamLeaguePlugin2.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
