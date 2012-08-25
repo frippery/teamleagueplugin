@@ -42,19 +42,20 @@ typedef struct
 	Status_t (*getHandlers)(TabHandlers_t*);
 } TabInitInfo_t ;
 
-extern Status_t Tab_Current_GetHandlers(TabHandlers_t* );
+/*  extern Status_t Tab_Current_GetHandlers(TabHandlers_t* );
 extern Status_t Tab_Standings_GetHandlers(TabHandlers_t* );
 extern Status_t Tab_Finished_GetHandlers(TabHandlers_t* );
-extern Status_t Tab_Upcoming_GetHandlers(TabHandlers_t* );
+extern Status_t Tab_Upcoming_GetHandlers(TabHandlers_t* ); */
 extern Status_t Tab_NotScheduled_GetHandlers(TabHandlers_t* );
 
 static TabInitInfo_t g_initTabList[] = 
 {
-	{ &Tab_Current_GetHandlers },
+  { &Tab_NotScheduled_GetHandlers },
+/*	{ &Tab_Current_GetHandlers },
 	{ &Tab_Upcoming_GetHandlers },
 	{ &Tab_Standings_GetHandlers },
 	{ &Tab_Finished_GetHandlers },
-	{ &Tab_NotScheduled_GetHandlers },
+	{ &Tab_NotScheduled_GetHandlers }, */
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -212,6 +213,7 @@ Status_t Tabset_Event(TabEvent_t event)
 		return status;
 	}
 
+  
 	status = Tab_Common_Event(event);
 	if (status == STATUS_OK_PROCESSED)
 	{
@@ -268,15 +270,13 @@ static Status_t Tabset_CreateTabset(HWND parent)
 
 	g_tabSet.tabCtrlHwnd = CreateWindowEx(0, WC_TABCONTROL, L"", WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE , 0, 0, rcClient.right, rcClient.bottom, 
 		parent, NULL, g_tabSet.hInstance, NULL);
-	if (g_tabSet.tabCtrlHwnd == 0)
-	{
+	if (g_tabSet.tabCtrlHwnd == 0) {
 		return STATUS_ERR_WINDOW_CANNOT_CREATE;
 	}
 
 	SendMessage(g_tabSet.tabCtrlHwnd, WM_SETFONT, (WPARAM)GetStockObject(DEFAULT_GUI_FONT), TRUE);
 
-	for (i = 0; i < sizeof(g_initTabList)/sizeof(TabInitInfo_t); ++i)
-	{
+	for (i = 0; i < sizeof(g_initTabList)/sizeof(TabInitInfo_t); ++i)	{
 		Status_t status;
 		TabInfo_t *tabInfo = &g_tabSet.tabs[g_tabSet.tabCount];
 

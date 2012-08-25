@@ -1,4 +1,4 @@
-enum GameStatus_p {
+enum Game_Status_t {
   GAMESTATUS_NotScheduled      = 0;
   GAMESTATUS_Pending           = 1;
   GAMESTATUS_InProgress        = 2;
@@ -15,26 +15,25 @@ enum GameStatus_p {
   GAMESTATUS_DoubleForfeit_o_o = 12;
   GAMESTATUS_DoubleForfeit_minus_minus = 13;
   GAMESTATUS_Error = 14;
-};
+}
 
-message Game_p {
+message Game_t {
   required int32 game_id = 1;
   required string player1 = 2;
   required string player2 = 3;
-  required GameStatus_p statue = 4;
+  required Game_Status_t status = 4;
   optional fixed64 scheduled_time = 5;
   required bool is_player1_white = 6;
-};
-
-message TeamGame_p {
+}
+message TeamGame_t {
   required int32 round = 1;
   required string section = 2;
   required string team1 = 3;
   required string team2 = 4;
-  repeated Game_p team_games = 5;
+  repeated Game_t team_games = 5;
 };
 
-message Season_p
+message Season_t
 {
-  repeated TeamGame_p team_games = 1;
+  repeated TeamGame_t team_games = 1;
 };
