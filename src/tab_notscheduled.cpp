@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "tab_common.h"
 #include "dataset.h"
 #include "settings.h"
@@ -9,29 +11,25 @@
 
 typedef struct 
 {
-	Basic_GameData_t games[CONFIG_MAX_GAMES_PER_ROUND];
-	int gamesCount;
+  std::vector<Basic_GameData_t> games;
 	HWND hwnd;
 } Tab_NotScheduled_t;
 
 static Tab_NotScheduled_t *g_tab = 0;
 
 
-static Status_t Tab_NotScheduled_UpdateData()
-{
+static Status_t Tab_NotScheduled_UpdateData() {
 	Status_t status;
 
-	BOOL onlyFavorites = Settings_GetSettings()->showFavoritesOnly;
+	BOOL onlyFavorites = Settings::Get()->settings().showfavoritesonly();
 
-	status = Tab_Common_PopulateStdData(onlyFavorites, g_tab->games, &g_tab->gamesCount, CONFIG_MAX_GAMES_PER_ROUND, GAMESTATUS_NotScheduled);
+	status = Tab_Common_PopulateStdData(onlyFavorites, &g_tab->games, CONFIG_MAX_GAMES_PER_ROUND, GAMESTATUS_NotScheduled);
 
-	if (status != STATUS_OK)
-	{
-		g_tab->gamesCount = 0;
+	if (status != STATUS_OK) {
+    g_tab->games.clear();
 	}
 
-	if (status == STATUS_ERR_DATA_INVALID)
-	{
+	if (status == STATUS_ERR_DATA_INVALID) {
 		status = STATUS_OK;
 	}
 
@@ -46,8 +44,7 @@ static void Tab_NotScheduled_UpdateScrollBar()
 	int totalHeight = 0;
 	SCROLLINFO scrollinfo;
 
-	if (g_tab->gamesCount <= 0)
-	{
+	if (g_tab->games.empty()) {
 		scrollinfo.cbSize = sizeof(scrollinfo);
 		scrollinfo.fMask = SIF_PAGE | SIF_RANGE;
 		scrollinfo.nMin = 0;
@@ -62,7 +59,7 @@ static void Tab_NotScheduled_UpdateScrollBar()
 
 	Tab_Common_CalcStdSizes(&rect, &sizes);
 
-	totalHeight = sizes.headerHeight + sizes.rowHeight*g_tab->gamesCount;
+	totalHeight = sizes.headerHeight + sizes.rowHeight*g_tab->games.size();
 
 	scrollinfo.cbSize = sizeof(scrollinfo);
 	scrollinfo.fMask = SIF_PAGE | SIF_RANGE;
@@ -84,8 +81,7 @@ static void Tab_NotScheduled_PaintDC(HDC hdc, int offset, RECT clientRect)
 	Tabset_SelectStyle(hdc, &Tabset_GetGdiCollection()->neutralCell, 0);
 	SetBkMode(hdc, TRANSPARENT);
 
-	if (g_tab->gamesCount <= 0)
-	{
+	if (g_tab->games.empty())	{
 		DrawText(hdc, L"\n\n\nThere're no unscheduled games.", -1, &clientRect, DT_CENTER);
 		return;
 	}
@@ -94,7 +90,7 @@ static void Tab_NotScheduled_PaintDC(HDC hdc, int offset, RECT clientRect)
 	clientRect.top -= offset;
 	rect = clientRect;
 
-	Tab_Common_DrawSimpleTable(hdc, &clientRect, &sizes, g_tab->games, g_tab->gamesCount);
+	Tab_Common_DrawSimpleTable(hdc, &clientRect, &sizes, g_tab->games);
 }
 
 static Status_t Tab_Current_UpdateCheckBox()
@@ -108,7 +104,7 @@ static Status_t Tab_Current_UpdateCheckBox()
 
 	rect.bottom = rect.top + CONFIG_TABS_COMMON_DROPDOWN_HEIGHT;
 
-	return Tab_Common_UpdateCheckBox(g_tab->hwnd, &rect, Dataset_GetDataset()->isDataValid);
+	return Tab_Common_UpdateCheckBox(g_tab->hwnd, &rect, Dataset::Get().is_data_valid());
 }
 
 static Tab_HitPoint_t Tab_NotScheduled_HitTest(POINT point, Tab_Common_SimpleGameData_t *gameData)
@@ -125,7 +121,7 @@ static Tab_HitPoint_t Tab_NotScheduled_HitTest(POINT point, Tab_Common_SimpleGam
 	point.y -= CONFIG_TABS_COMMON_TOP_MARGIN;
 	point.y -= sizes.headerHeight;
 
-	return Tab_Common_StdTableHitTest(point, &sizes, g_tab->games, g_tab->gamesCount, gameData);
+	return Tab_Common_StdTableHitTest(point, &sizes, g_tab->games, gameData);
 }
 
 static LRESULT CALLBACK Tab_NotScheduled_WndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

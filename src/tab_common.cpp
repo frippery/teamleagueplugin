@@ -29,17 +29,13 @@ Status_t Tab_Common_Init()
 
 static void Tab_Common_UpdateButtonStatus()
 {
-	if (g_tabCommon.buttonHwnd)
-	{
-		if (Dataset_GetDataset()->isUpdateInProgress)
-		{
+	if (g_tabCommon.buttonHwnd) {
+		if (Dataset::Get().is_update_in_progress())	{
 			SendMessage(g_tabCommon.buttonHwnd, WM_SETTEXT, (WPARAM)0, (LPARAM)L"Updating...");
-		}
-		else
-		{
+		}	else {
 			SendMessage(g_tabCommon.buttonHwnd, WM_SETTEXT, (WPARAM)0, (LPARAM)L"Update");
 		}
-		EnableWindow(g_tabCommon.buttonHwnd, Engine_IsOnline() && !Dataset_GetDataset()->isUpdateInProgress);
+		EnableWindow(g_tabCommon.buttonHwnd, Engine_IsOnline() && !Dataset::Get().is_update_in_progress());
 	}
 }
 
@@ -163,9 +159,9 @@ Status_t Tab_Common_WndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
 			}
 			else if (sender == g_tabCommon.showOnlyFavsHwnd)
 			{
-				BOOL showOnlyFavs = (SendMessage(g_tabCommon.showOnlyFavsHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED);
-				Settings_GetSettings()->showFavoritesOnly = showOnlyFavs;
-				Settings_Store();
+				bool showOnlyFavs = (SendMessage(g_tabCommon.showOnlyFavsHwnd, BM_GETCHECK, 0, 0) == BST_CHECKED);
+				Settings::Get()->settings().set_showfavoritesonly(showOnlyFavs);
+				Settings::Get()->Store();
 				Tabset_Event(TABEVENT_CONFIG_CHANGED);
 			}
 			return STATUS_OK_NOT_PROCESSED;
@@ -192,8 +188,7 @@ Status_t Tab_Common_WndProc( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,
 		}
 	case WM_PAINT:
 		{
-			if (! Dataset_GetDataset()->isDataValid)
-			{
+			if (!Dataset::Get().is_data_valid()) {
 				PAINTSTRUCT ps;
 				HDC hdc = BeginPaint(hwnd, &ps);
 				HFONT font = Tabset_GetGdiCollection()->normalFont;
@@ -287,12 +282,9 @@ Status_t Tab_Common_UpdateCheckBox(HWND parent, const RECT* rect, BOOL show)
 	}
 	SendMessage(g_tabCommon.showOnlyFavsHwnd, WM_SETFONT, (WPARAM)Tabset_GetGdiCollection()->normalFont, TRUE);
 
-	if (Settings_GetSettings()->showFavoritesOnly)
-	{
+	if (Settings::Get()->settings().showfavoritesonly()) {
 		SendMessage(g_tabCommon.showOnlyFavsHwnd, BM_SETCHECK, (WPARAM)BST_CHECKED, 0);
-	}
-	else
-	{
+	} else {
 		SendMessage(g_tabCommon.showOnlyFavsHwnd, BM_SETCHECK, (WPARAM)BST_UNCHECKED, 0);
 	}
 	return STATUS_OK;
@@ -367,10 +359,8 @@ const TabSet_ColorStyle_t* Tab_Common_GetTeamGametStyle(const TeamGame_t *teamGa
 	int maxScore = 4*2;
 	int i;
 
-	for(i = 0; i < teamGame->gameCount; ++i)
-	{
-		switch(teamGame->teamGames[i].status)
-		{
+	for(i = 0; i < teamGame->team_games_size(); ++i) {
+		switch(teamGame->team_games(i).status()) {
 		case GAMESTATUS_Win_1_0:
 		case GAMESTATUS_Win_i_o:
 		case GAMESTATUS_Win_plus_minus:
@@ -479,8 +469,8 @@ void Tab_Common_CalcStdSizes(const RECT* rect, Tab_Common_StdTablePaintData_t* s
 	sizes->playerWidth = baseWidth * 3;
 }
 
-Tab_HitPoint_t Tab_Common_StdTableHitTest(POINT point, const Tab_Common_StdTablePaintData_t *sizes, const Basic_GameData_t* data, 
-																int count, Tab_Common_SimpleGameData_t *gameData)
+Tab_HitPoint_t Tab_Common_StdTableHitTest(POINT point, const Tab_Common_StdTablePaintData_t *sizes, const vector<Basic_GameData_t>& data, 
+																          Tab_Common_SimpleGameData_t *gameData)
 {
 	int index;
 	if (point.x < 0 || point.y < 0 || point.y >= sizes->rowHeight*count || point.x >= sizes->totalWidth )
@@ -496,10 +486,10 @@ Tab_HitPoint_t Tab_Common_StdTableHitTest(POINT point, const Tab_Common_StdTable
 	}
 
 	gameData->gameId = data[index].gameId;
-	strcpy_s(gameData->player1, sizeof(gameData->player1), data[index].player1);
-	strcpy_s(gameData->player2, sizeof(gameData->player2), data[index].player2);
-	strcpy_s(gameData->team1, sizeof(gameData->team1), data[index].team1);
-	strcpy_s(gameData->team2, sizeof(gameData->team2), data[index].team2);
+  gameData->player1 = data[index].player1;
+  gameData->player2 = data[index].player2;
+  gameData->team1 = data[index].team1;
+  gameData->team2 = data[index].team2;
 
 	if (point.x < sizes->roundWidth)
 	{
@@ -519,10 +509,9 @@ Tab_HitPoint_t Tab_Common_StdTableHitTest(POINT point, const Tab_Common_StdTable
 	}
 	point.x -= sizes->playerWidth;
 
-	if (point.x < sizes->playerWidth)
-	{
-		SwapData(gameData->player1, gameData->player2, CONFIG_MAX_NICKNAME_LENGTH);
-		SwapData(gameData->team1, gameData->team2, CONFIG_MAX_TEAM_TITLE_LENGTH);
+	if (point.x < sizes->playerWidth)	{
+    std::swap(gameData->player1, gameData->player2);
+    std::swap(gameData->team1, gameData->team2);
 		return HITPOINT_Player2;
 	}
 
@@ -530,8 +519,7 @@ Tab_HitPoint_t Tab_Common_StdTableHitTest(POINT point, const Tab_Common_StdTable
 	return HITPOINT_Milk;
 }
 
-void Tab_Common_DrawSimpleTable( HDC hdc, RECT *clientRect, const Tab_Common_StdTablePaintData_t *sizes, const Basic_GameData_t* data, int count)
-{
+void Tab_Common_DrawSimpleTable( HDC hdc, RECT *clientRect, const Tab_Common_StdTablePaintData_t *sizes, const std::vector<Basic_GameData_t>& data) {
 	int i;
 	RECT rect = *clientRect;
 
@@ -627,78 +615,62 @@ void Tab_Common_DrawSimpleTable( HDC hdc, RECT *clientRect, const Tab_Common_Std
 	}
 }
 
-Status_t Tab_Common_PopulateStdData( BOOL onlyFavorites, Basic_GameData_t* newEntry, int *count, int maxCount, Game_Status_t status ) 
-{
-	const Dataset_t* data = Dataset_GetDataset();
+Status_t Tab_Common_PopulateStdData(BOOL onlyFavorites, 
+                                    std::vector<Basic_GameData_t>* entries,
+                                    int maxCount, Game_Status_t status ) {
+	const Dataset& data = Dataset::Get();
 	int i;
 
-	if (!data->isDataValid)
-	{
+	if (!data.is_data_valid()) {
 		return STATUS_ERR_DATA_INVALID;
 	}
 
-	*count = 0;
+  entries->clear();
 
-	for(i = 0; i < data->teamGameCount; ++i)
-	{
-		const TeamGame_t *teamGame = &data->teamGames[i];
+	for(i = 0; i < data.get_season().team_games_size(); ++i) {
+		const TeamGame_t& teamGame = data.get_season().team_games(i);
 		BOOL processThisTeamGame = TRUE;
 
 		BOOL team1IsFavorite = FALSE;
 		BOOL team2IsFavorite = TRUE;
 		int j;
 
-		if (onlyFavorites)
-		{
-			team1IsFavorite = Settings_IsTeamFavorite(teamGame->team1);
-			team2IsFavorite = Settings_IsTeamFavorite(teamGame->team2);
+		if (onlyFavorites) {
+			team1IsFavorite = Settings::Get()->IsTeamFavorite(teamGame.team1());
+			team2IsFavorite = Settings::Get()->IsTeamFavorite(teamGame.team2());
 			processThisTeamGame = team1IsFavorite || team2IsFavorite;
 		}
 
-		if (!processThisTeamGame)
-		{
+		if (!processThisTeamGame)	{
 			continue;
 		}
 
-		for(j = 0; j < teamGame->gameCount; ++j)
-		{
-			const Game_t* game = &teamGame->teamGames[j];
-			if (game->status != status)
-			{
+		for(j = 0; j < teamGame.team_games_size(); ++j) {
+			const Game_t* game = &teamGame.team_games(j);
+			if (game->status() != status)	{
 				continue;
 			}
 
-			if (*count >= maxCount)
 			{
-				return STATUS_ERR_NOT_ENOUGH_ROOM;
-			}
+        Basic_GameData_t newEntry;
+				newEntry.gameId = game->game_id();
+				newEntry.Round = teamGame.round();
 
-			if (newEntry)
-			{
-				newEntry->gameId = game->gameId;
-				newEntry->Round = teamGame->round;
+        newEntry.secton = teamGame.section();
 
-				strcpy_s(newEntry->secton, sizeof(newEntry->secton), teamGame->secton);
-
-				if (game->isPlayer1White)
-				{
-					strcpy_s(newEntry->team1, sizeof(newEntry->team1), teamGame->team1);
-					strcpy_s(newEntry->team2, sizeof(newEntry->team2), teamGame->team2);
-					strcpy_s(newEntry->player1, sizeof(newEntry->player1), game->player1);
-					strcpy_s(newEntry->player2, sizeof(newEntry->player1), game->player2);
+				if (game->is_player1_white())	{
+          newEntry.team1 = teamGame.team1();
+          newEntry.team2 = teamGame.team2();
+          newEntry.player1 = game->player1();
+          newEntry.player2 = game->player2();
+				}	else {
+          newEntry.team1 = teamGame.team2();
+          newEntry.team2 = teamGame.team1();
+          newEntry.player1 = game->player2();
+          newEntry.player2 = game->player1();
 				}
-				else
-				{
-					strcpy_s(newEntry->team1, sizeof(newEntry->team1), teamGame->team2);
-					strcpy_s(newEntry->team2, sizeof(newEntry->team2), teamGame->team1);
-					strcpy_s(newEntry->player1, sizeof(newEntry->player1), game->player2);
-					strcpy_s(newEntry->player2, sizeof(newEntry->player1), game->player1);
-				}
-
-				++newEntry;
+        entries->push_back(newEntry);
 			}
-
-			++*count;
 		}
 	}
 	return STATUS_OK;
@@ -749,9 +721,7 @@ Status_t Tab_Common_DoMenu(HWND hwnd, unsigned int flags, const Tab_Common_Simpl
 
 
 	if (flags & MENUTYPE_GameStartable && Engine_IsOnline() && 
-		(_strcmpi(gameData->player1, Engine_GetUserName()) == 0 || _strcmpi(gameData->player2, Engine_GetUserName()) == 0)
-		)
-	{
+		  (gameData->player1 == Engine_GetUserName() || gameData->player2 == Engine_GetUserName()))	{
 		MENUITEMINFOA item;
 		item.cbSize = sizeof(item);
 		item.fMask = MIIM_TYPE | MIIM_ID | MIIM_STATE;
@@ -872,7 +842,7 @@ Status_t Tab_Common_DoMenu(HWND hwnd, unsigned int flags, const Tab_Common_Simpl
 		item.wID = MENUITEM_Add_Team_To_Favs;
 		item.dwTypeData =  buf;
 		item.cch = (UINT)strlen(buf)+1;
-		item.fState = Settings_IsTeamFavorite(gameData->team1) ? MFS_CHECKED : MFS_UNCHECKED;
+		item.fState = Settings::Get()->IsTeamFavorite(gameData->team1) ? MFS_CHECKED : MFS_UNCHECKED;
 		InsertMenuItemA(menu, 90, FALSE, &item);
 
 		sprintf_s(buf, sizeof(buf), "List team \"%s\"", gameData->team1);
@@ -899,7 +869,7 @@ Status_t Tab_Common_DoMenu(HWND hwnd, unsigned int flags, const Tab_Common_Simpl
 		item.wID = MENUITEM_Add_Team2_To_Favs;
 		item.dwTypeData =  buf;
 		item.cch = (UINT)strlen(buf)+1;
-		item.fState = Settings_IsTeamFavorite(gameData->team2) ? MFS_CHECKED : MFS_UNCHECKED;
+		item.fState = Settings::Get()->IsTeamFavorite(gameData->team2) ? MFS_CHECKED : MFS_UNCHECKED;
 		InsertMenuItemA(menu, 90, FALSE, &item);
 
 		sprintf_s(buf, sizeof(buf), "List team \"%s\"", gameData->team2);
@@ -918,7 +888,7 @@ Status_t Tab_Common_DoMenu(HWND hwnd, unsigned int flags, const Tab_Common_Simpl
 	item.wID = MENUITEM_Plugin_UpdateData;
 	item.dwTypeData =  L"Update data";
 	item.cch = (UINT)wcslen(item.dwTypeData)+1;
-	item.fState = Dataset_GetDataset()->isDataValid ? MFS_ENABLED : MFS_GRAYED;
+	item.fState = Dataset::Get().is_data_valid() ? MFS_ENABLED : MFS_GRAYED;
 	InsertMenuItemW(menu, 100, FALSE, &item);
 
 	item.wID = MENUITEM_Plugin_Settings;
@@ -936,17 +906,10 @@ Status_t Tab_Common_DoMenu(HWND hwnd, unsigned int flags, const Tab_Common_Simpl
 		Engine_RequestData();
 		break;
 	case MENUITEM_Plugin_Settings:
-		Settings_DoDialog();
+		Settings::Get()->DoDialog();
 		break;
 	case MENUITEM_Add_Team_To_Favs:
-		if (Settings_IsTeamFavorite(gameData->team1))
-		{
-			Settings_MakeTeamNotFavorite(gameData->team1);
-		}
-		else
-		{
-			Settings_MakeTeamFavorite(gameData->team1);
-		}
+    Settings::Get()->ChangeTeamFavoriteStatus(gameData->team1, !Settings::Get()->IsTeamFavorite(gameData->team1));
 		Tabset_Event(TABEVENT_CONFIG_CHANGED);
 		break;
 	case MENUITEM_List_a_Team:
@@ -954,14 +917,7 @@ Status_t Tab_Common_DoMenu(HWND hwnd, unsigned int flags, const Tab_Common_Simpl
 		Engine_SendCommand(buf);
 		break;
 	case MENUITEM_Add_Team2_To_Favs:
-		if (Settings_IsTeamFavorite(gameData->team2))
-		{
-			Settings_MakeTeamNotFavorite(gameData->team2);
-		}
-		else
-		{
-			Settings_MakeTeamFavorite(gameData->team2);
-		}
+    Settings::Get()->ChangeTeamFavoriteStatus(gameData->team2, !Settings::Get()->IsTeamFavorite(gameData->team2));
 		Tabset_Event(TABEVENT_CONFIG_CHANGED);
 		break;
 	case MENUITEM_List_a_Team2:
@@ -997,12 +953,9 @@ Status_t Tab_Common_DoMenu(HWND hwnd, unsigned int flags, const Tab_Common_Simpl
 		Engine_SendCommand(buf);
 		break;
 	case MENUITEM_Game_Observe:
-		if (Settings_IsTeamFavorite(gameData->team2) && !Settings_IsTeamFavorite(gameData->team1))
-		{
+		if (Settings::Get()->IsTeamFavorite(gameData->team2) && !Settings::Get()->IsTeamFavorite(gameData->team1)) {
 			sprintf_s(buf, sizeof(buf), "observe %s", gameData->player2);
-		}
-		else
-		{
+		}	else {
 			sprintf_s(buf, sizeof(buf), "observe %s", gameData->player1);
 		}
 		Engine_SendCommand(buf);

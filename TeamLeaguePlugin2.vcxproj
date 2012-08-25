@@ -40,7 +40,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <TargetExt>.BCPlugin</TargetExt>
-    <OutDir>D:\usr\BabasChess1</OutDir>
+    <OutDir>D:\usr\BabasChess1\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -50,15 +50,18 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TEAMLEAGUEPLUGIN2_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>D:\Dev\Libs\gsrc\protobuf-2.4.1\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Winmm.lib;Comctl32.lib;libprotobufsd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Dev\Libs\glibs</AdditionalLibraryDirectories>
     </Link>
     <CustomBuild>
       <Command>D:\Dev\Tools\protobuf\protobuf.exe --cpp_out=$(ProjectDir) --proto_path=$(ProjectDir) %(FullPath)</Command>
@@ -68,7 +71,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
@@ -77,12 +80,15 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TEAMLEAGUEPLUGIN2_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>D:\Dev\Libs\gsrc\protobuf-2.4.1\src;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Winmm.lib;Comctl32.lib;libprotobufs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Dev\Libs\glibs</AdditionalLibraryDirectories>
     </Link>
     <CustomBuild>
       <Command>D:\Dev\Tools\protobuf\protobuf.exe --cpp_out=$(ProjectDir) --proto_path=$(ProjectDir) %(FullPath)</Command>
@@ -99,8 +105,10 @@
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\dataset.h" />
     <ClInclude Include="src\engine.h" />
+    <ClInclude Include="src\gamedata.pb.h" />
     <ClInclude Include="src\globals.h" />
     <ClInclude Include="src\settings.h" />
+    <ClInclude Include="src\settings.pb.h" />
     <ClInclude Include="src\status.h" />
     <ClInclude Include="src\tabset.h" />
     <ClInclude Include="src\tab_common.h" />
@@ -108,14 +116,29 @@
   <ItemGroup>
     <ClCompile Include="src\dataset.cpp" />
     <ClCompile Include="src\engine.cpp" />
+    <ClCompile Include="src\gamedata.pb.cc">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+    </ClCompile>
     <ClCompile Include="src\settings.cpp" />
+    <ClCompile Include="src\settings.pb.cc">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Level3</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Level3</WarningLevel>
+    </ClCompile>
     <ClCompile Include="src\tabset.cpp" />
     <ClCompile Include="src\tab_common.cpp" />
-    <ClCompile Include="src\tab_current.cpp" />
-    <ClCompile Include="src\tab_finished.cpp" />
+    <ClCompile Include="src\tab_current.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\tab_finished.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\tab_notscheduled.cpp" />
-    <ClCompile Include="src\tab_standings.cpp" />
-    <ClCompile Include="src\tab_upcoming.cpp" />
+    <ClCompile Include="src\tab_standings.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\tab_upcoming.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="src\gamedata.proto">
@@ -124,6 +147,11 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TeamLeaguePlugin2.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\settings.proto">
+      <FileType>Document</FileType>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

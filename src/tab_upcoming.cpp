@@ -428,36 +428,34 @@ static Status_t Tab_Upcoming_UpdateCheckBox()
 
 	rect.bottom = rect.top + CONFIG_TABS_COMMON_DROPDOWN_HEIGHT;
 
-	return Tab_Common_UpdateCheckBox(g_tab->hwnd, &rect, Dataset_GetDataset()->isDataValid);
+	return Tab_Common_UpdateCheckBox(g_tab->hwnd, &rect, Dataset::Get().is_data_valid());
 }
 
-static Status_t Tab_Upcoming_UpdateData()
-{
-	const Dataset_t* data = Dataset_GetDataset();
+static Status_t Tab_Upcoming_UpdateData() {
+	const Dataset& data = Dataset::Get();
 	BOOL onlyFavorites = Settings_GetSettings()->showFavoritesOnly;
 	int i;
 
 	g_tab->gameCount = 0;
 
-	if (!data->isDataValid)
-	{
+	if (!data.is_data_valid()) {
 		g_tab->gameCount = 0;
 		return STATUS_OK;
 	}
 
-	for(i = 0; i < data->teamGameCount; ++i)
-	{
-		const TeamGame_t *teamGame = &data->teamGames[i];
+  const Season_t& season = data.get_season();
+
+	for(i = 0; i < season.team_games_size(); ++i) {
+		const TeamGame_t &team_game = season.team_games(i);
 		BOOL processThisTeamGame = TRUE;
 
 		BOOL team1IsFavorite = FALSE;
 		BOOL team2IsFavorite = TRUE;
 		int j;
 
-		if (onlyFavorites)
-		{
-			team1IsFavorite = Settings_IsTeamFavorite(teamGame->team1);
-			team2IsFavorite = Settings_IsTeamFavorite(teamGame->team2);
+		if (onlyFavorites) {
+			team1IsFavorite = Settings_IsTeamFavorite(team_game.team1());
+			team2IsFavorite = Settings_IsTeamFavorite(team_game.team2());
 			processThisTeamGame = team1IsFavorite || team2IsFavorite;
 		}
 

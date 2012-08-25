@@ -21,7 +21,7 @@
 
 #define NOT_VALID31 0x7fffffff
 #define CONFIG_MAX_CONFIG_PATHNAME_LENGTH 2048
-#define CONFIG_CONFIG_FILENAME L"TeamLeaguePlugin.meaw-meaw"
+#define CONFIG_CONFIG_FILENAME L"TeamLeaguePlugin.meow-meow"
 #define TEAMLEAGUE_CMD(str) "xtell teamleague " str
 #define CONFIG_TIMER_POLLING_INTERVAL 1000
 #define CONFIG_MAX_USERNAME_LENGTH 128
@@ -46,10 +46,14 @@
 // DataSet constants
 
 #define CONFIG_BOT_QTELL_IDENTIFIER			":*TeamLeague"
+
+/*
+#define CONFIG_BOT_QTELL_IDENTIFIER			":*TeamLeague"
 #define CONFIG_BOT_QTELL_UPDATE				"pairing:"
 #define CONFIG_BOT_QTELL_CONTROL			"pairings"
 #define CONFIG_BOT_QTELL_START				"start."
 #define CONFIG_BOT_QTELL_FINISH				"done."
+*/
 
 // TabSet constants
 #define CONFIG_PLUGIN_TAB_TITLE "TeamLeague"
