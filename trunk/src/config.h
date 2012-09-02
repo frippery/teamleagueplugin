@@ -6,7 +6,7 @@
 // #define ENABLE_TELLING_TO_CHANNEL_177
 // #define SHOW_SPECIFIC_SEASON "T37"
 
-// Version contants
+// Version constants
 
 #define STRINGIFY(s) #s
 #define XSTRINGIFY(s) STRINGIFY(s)
@@ -47,13 +47,13 @@
 
 #define CONFIG_BOT_QTELL_IDENTIFIER			":*TeamLeague"
 
-/*
-#define CONFIG_BOT_QTELL_IDENTIFIER			":*TeamLeague"
-#define CONFIG_BOT_QTELL_UPDATE				"pairing:"
-#define CONFIG_BOT_QTELL_CONTROL			"pairings"
-#define CONFIG_BOT_QTELL_START				"start."
-#define CONFIG_BOT_QTELL_FINISH				"done."
-*/
+
+// #define CONFIG_BOT_QTELL_IDENTIFIER			":*TeamLeague"
+// #define CONFIG_BOT_QTELL_UPDATE				"pairing:"
+// #define CONFIG_BOT_QTELL_CONTROL			"pairings"
+// #define CONFIG_BOT_QTELL_START				"start."
+// #define CONFIG_BOT_QTELL_FINISH				"done."
+
 
 // TabSet constants
 #define CONFIG_PLUGIN_TAB_TITLE "TeamLeague"

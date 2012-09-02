@@ -14,14 +14,14 @@
 
 class Settings {
 public:
-  Settings(const std::wstring& filename);
+  Settings(HINSTANCE instance);
+  // Settings(const std::wstring& filename);
   void DoDialog();
   Status_t Store();
-  bool IsTeamFavorite(const std::string& team);
+  bool IsTeamFavorite(const std::string& team) const;
   SettingsFile_t& settings() { return data_; }
+  const SettingsFile_t& settings() const { return data_; }
   Status_t ChangeTeamFavoriteStatus(const std::string& team, bool favorite);
-  static Settings* Get();
-
 private:
   struct DialogData {
     bool was_valid;  // True if teamleague data was valid when dialog appears

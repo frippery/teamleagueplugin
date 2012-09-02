@@ -6,19 +6,12 @@
 #include "engine.h"
 
 namespace {
-
 static const std::string kBotQtellIdentifier = ":*TeamLeague";
 static const std::string kBotQtellUpdate     = "pairing:";
 static const std::string kBotQtellControl    = "pairings";
 static const std::string kBotQtellStart      = "start.";
 static const std::string kBotQtellFinish     = "done.";
-
-Dataset g_dataset;
 }  // Anonymous namespace
-
-Dataset& Dataset::Get() {
-	return g_dataset;
-}
 
 Dataset::Dataset()
   : data_is_valid_(false), update_is_in_progress_(false) {
@@ -236,7 +229,7 @@ bool Dataset::ReadPlayerAndTeam(const std::string& player_and_team, std::string*
   return true;
 }
 
-bool Dataset::ProcessHotData(const std::string& msg) {
+bool Dataset::ProcessHotData(const std::string& msg, const Settings& settings) {
   const int kMaxStringSize = 512;
 	char team1[kMaxStringSize];
 	char team2[kMaxStringSize];
@@ -278,12 +271,12 @@ bool Dataset::ProcessHotData(const std::string& msg) {
 		section, sizeof(section), &board) == 6) {
 		statusToSet = GAMESTATUS_InProgress;
 
-		if (Settings::Get()->settings().playsoundwhengamestarts() && 
-			(!Settings::Get()->settings().playsoundonlyforfavorites()
-          || Settings::Get()->IsTeamFavorite(team1)
-          || Settings::Get()->IsTeamFavorite(team2)))	{
+		if (settings.settings().playsoundwhengamestarts() && 
+			(!settings.settings().playsoundonlyforfavorites()
+          || settings.IsTeamFavorite(team1)
+          || settings.IsTeamFavorite(team2)))	{
 // MOOMOOMOOMOOMOO Level TODO. DOn't release with this commented out!
-			// PlaySound(Settings::Get()->settings().playsoundfilename(), NULL, SND_ASYNC | SND_FILENAME);
+			PlaySoundA(settings.settings().playsoundfilename().c_str(), NULL, SND_ASYNC | SND_FILENAME);
 		}
 	}
 

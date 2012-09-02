@@ -1,15 +1,12 @@
 #include "settings.h"
 #include <Windows.h>
-#include "tabset.h"
 #include "../resource.h"
 #include "dataset.h"
 #include <stdio.h>
 
 namespace {
 
-std::wstring GetConfigFileName() {
-
-  HINSTANCE instance = GetModuleHandle(NULL);
+std::wstring GetConfigFileName(HINSTANCE instance) {
   wchar_t buffer[2048];
   wchar_t* pos;
   GetModuleFileName(instance, buffer, (DWORD)(sizeof(buffer)/sizeof(wchar_t) - wcslen(CONFIG_CONFIG_FILENAME) - 2));
@@ -21,17 +18,11 @@ std::wstring GetConfigFileName() {
   return buffer;
 }
 
-Settings g_settings(GetConfigFileName());
-
 typedef struct {
 	char header[16]; // "moOOOoOoOoOoOo\0"
 	int size;
 } Settings_header_t;
 }  // Anonymous namespace
-
-Settings* Settings::Get() {
-  return &g_settings;
-}
 
 Status_t Settings::ChangeTeamFavoriteStatus(const std::string& team, bool favorite) {
 	for(int i = 0; i < data_.favorite_teams_size(); ++i) {
@@ -60,8 +51,8 @@ void Settings::PopulateDefaults() {
   if (!data_.has_playsoundonlyforfavorites()) data_.set_playsoundonlyforfavorites(true);
 }
 
-Settings::Settings(const std::wstring& filename)
-  : config_filename_(filename) {
+Settings::Settings(HINSTANCE instance)
+  : config_filename_(GetConfigFileName(instance)) {
     Load();
     PopulateDefaults();
 }
@@ -116,7 +107,7 @@ Status_t Settings::Store() {
   return STATUS_OK;
 }
 
-bool Settings::IsTeamFavorite(const std::string& team) {
+bool Settings::IsTeamFavorite(const std::string& team) const {
 	for(int i = 0; i < data_.favorite_teams_size(); ++i)
 	{
 		if (data_.favorite_teams(i) == team) {
@@ -153,7 +144,7 @@ void Settings::DlgInsertTeam(HWND hwnd, const std::string& team, const std::stri
 		TreeView_Expand(hwnd, parent, TVE_EXPAND);
 	}
 }
-
+/*
 void Settings::UnpopulateDlg(HWND hwnd) {
 	HWND favoritesHwnd = GetDlgItem(hwnd, IDC_TREE_FAVORITES);
 
@@ -308,11 +299,11 @@ INT_PTR CALLBACK Settings_DialogProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
 	return FALSE;
 }
-
+*/
 void Settings::DoDialog() {
-	if (IDOK == DialogBox(Tabset_GetHInstance(), MAKEINTRESOURCE(IDD_DIALOG1), Tabset_GetHWND(), Settings_DialogProc)) {
+/*	if (IDOK == DialogBox(Tabset_GetHInstance(), MAKEINTRESOURCE(IDD_DIALOG1), Tabset_GetHWND(), Settings_DialogProc)) {
 		Store();
 		Tabset_Event(TABEVENT_CONFIG_CHANGED);
-	}
+	} */
 	PlaySound(NULL, NULL, SND_ASYNC);
 }

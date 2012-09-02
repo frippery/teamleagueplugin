@@ -1,172 +1,91 @@
-#include "engine.h"
-#include "BabasChessPlugin/BabasChessPlugin.h"
-#include "tabset.h"
-#include <string.h>
-#include "status.h"
+#include <cassert>
+#include <string>
+#include <windows.h>
+#include "babaschess.h"
 #include "dataset.h"
 #include "settings.h"
+#include "tools.h"
 
-struct Engine_t {
-	HINSTANCE hInstance;
-	DWORD pluginId;
-	BABASCHESS_DISPATCH_V_1_4 *dispatchTable;
-	BOOL isOnline;
-	char onlineUserName[CONFIG_MAX_USERNAME_LENGTH];
-	int lastMinuteValue;
+class TeamLeaguePlugin : public BabasChessPlugin {
+public:
+  TeamLeaguePlugin(HINSTANCE hInstance);
+  void RequestData();
+  bool IsOnline() const { return online_; }
+  void UpdateTabset() {} // TODO(crem): Implement this
+
+private:
+  virtual void OnLogOn();
+  virtual void OnLogOff(bool reason);
+  virtual void OnTimer();
+  virtual bool OnQTell(ServerOuputQTellType soq, const std::string& fullline);
+
+  int last_minute_value_;
+  Dataset dataset_;
+  std::string username_;
+  bool online_;
+  HINSTANCE hInstance_;
+  Settings settings_;
 };
 
-static Engine_t g_engine;
 
-void Engine_OnTimer() {
-	SYSTEMTIME time;
-	GetLocalTime(&time);
-	if (time.wMinute != g_engine.lastMinuteValue) 	{
-		g_engine.lastMinuteValue = time.wMinute;
-		Tabset_Event(TABEVENT_MINUTE_CHANGED);
-	}
+TeamLeaguePlugin::TeamLeaguePlugin(HINSTANCE hInstance)
+    : hInstance_(hInstance),
+      online_(false),
+      settings_(hInstance) {
 }
 
-BOOL Engine_IsOnline() {
-	return g_engine.isOnline;
-}
-
-char* Engine_GetUserName() {
-	return g_engine.onlineUserName;
-}
-
-void Engine_SendCommand(const char* command) {
-	g_engine.dispatchTable->BCAPI_SendCommand(g_engine.pluginId, command);
-}
-
-void Engine_RequestData() {
-	if (Engine_IsOnline() && !Dataset::Get().is_update_in_progress())	{
+void TeamLeaguePlugin::RequestData() {
+  if (IsOnline() && !dataset_.is_update_in_progress())	{
 #ifdef SHOW_SPECIFIC_SEASON
-		Engine_SendCommand(TEAMLEAGUE_CMD("botpairings " SHOW_SPECIFIC_SEASON));
+    SendCommand(TEAMLEAGUE_CMD("botpairings " SHOW_SPECIFIC_SEASON));
 #else
-		Engine_SendCommand(TEAMLEAGUE_CMD("botpairings"));
+    SendCommand(TEAMLEAGUE_CMD("botpairings"));
 #endif
-		Tabset_Event(TABEVENT_DATA_UPDATE_REQUESTED);
-	}
+    UpdateTabset();
+  }
 }
 
-Status_t Engine_Init() {
-	g_engine.isOnline = FALSE;
-	*g_engine.onlineUserName = '\0';
-  return STATUS_OK;
+void TeamLeaguePlugin::OnTimer() {
+  SYSTEMTIME time;
+  GetLocalTime(&time);
+  if (time.wMinute != last_minute_value_) 	{
+    last_minute_value_ = time.wMinute;
+    UpdateTabset();
+  }
 }
 
-void Engine_Destroy() {
-	Tabset_Destroy();
+void TeamLeaguePlugin::OnLogOn() {
+  online_ = true;
+  GetFICSUserName(&username_);
+
+  UpdateTabset();
+
+  if (settings_.settings().update_on_logon()) {
+    RequestData();
+  }
 }
 
-void Engine_SetDispatchTable(BABASCHESS_DISPATCH_V_1_4 * pTable) {
-	g_engine.dispatchTable = pTable;
+void TeamLeaguePlugin::OnLogOff(bool reason) {
+  (void)reason;
+  online_ = false;
+  if (dataset_.is_update_in_progress())
+    dataset_.Abort();
 }
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved) {
-	(void)lpReserved;
-	switch( fdwReason ) { 
-	case DLL_PROCESS_ATTACH:
-		g_engine.hInstance = hinstDLL;
-		DisableThreadLibraryCalls(hinstDLL);
-		break;
-
-	case DLL_PROCESS_DETACH:
-		break;
-	}
-	return TRUE;
+bool TeamLeaguePlugin::OnQTell(ServerOuputQTellType soq, const std::string& fullline) {
+  if (soq == SOQ_Generic && isPrefix(CONFIG_BOT_QTELL_IDENTIFIER, fullline)) {
+    Status_t status = dataset_.ProcessDataChunk(fullline);
+    if (status == STATUS_OK_GAME_UPDATE_COMPLETED || status == STATUS_OK_EMPTY_DATASET) {  // TODO do something special on empty dataset
+      UpdateTabset();
+    }
+    return false;
+  }
+  return true;
 }
 
-////////////////////////////////////////////////////////
-// Plugin handlers
-////////////////////////////////////////////////////////
+#if 0
 
-extern "C" {
-
-_declspec(dllexport) BOOL _cdecl BCP_Initialize(DWORD dwBabasChessVersion, DWORD dwPluginID, DWORD *pDispatchversionRequired) {
-	Status_t status;
-
-	if (dwBabasChessVersion<BCP_MAKEVERSION(3,9)) {
-		return FALSE;
-	}
-
-	*pDispatchversionRequired = BCP_MAKEVERSION(1,4);
-	g_engine.pluginId = dwPluginID;
-
-	status = Engine_Init();
-
-	if (status != STATUS_OK) {
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-_declspec(dllexport) void _cdecl BCP_DeInitialize() {
-	Engine_Destroy();
-}
-
-_declspec(dllexport) void _cdecl BCP_GetDispatchTable(void *pTable) {
-	Engine_SetDispatchTable((BABASCHESS_DISPATCH_V_1_4 *) pTable);
-}
-
-_declspec(dllexport) void _cdecl BCP_OnLogOn() {
-	g_engine.isOnline = TRUE;
-	g_engine.dispatchTable->BCAPI_GetUserName(g_engine.onlineUserName, CONFIG_MAX_USERNAME_LENGTH);
-
-	Tabset_Event(TABEVENT_ONLINE);
-
-	if (Settings::Get()->settings().update_on_logon()) {
-		Engine_RequestData();
-	}
-}
-
-_declspec(dllexport) void _cdecl BCP_OnLogOff(BOOL bReason)
-{ 
-	(void)bReason;
-	g_engine.isOnline = FALSE;
-	Tabset_Event(TABEVENT_OFFLINE);
-	if (Dataset::Get().is_update_in_progress()) {
-		Dataset::Get().Abort();
-	}
-}
-
-_declspec(dllexport) void _cdecl BCP_OnTimer() {}
-_declspec(dllexport) BOOL _cdecl BCP_OnQTell(ServerOuputQTellType soq, const char *fullLine) {
-	if (soq == SOQ_Generic && strncmp(CONFIG_BOT_QTELL_IDENTIFIER, fullLine, sizeof(CONFIG_BOT_QTELL_IDENTIFIER)-1 ) == 0) {
-		Status_t status = Dataset::Get().ProcessDataChunk(fullLine);
-		if (status == STATUS_OK_GAME_UPDATE_STARTED) {
-			Tabset_Event(TABEVENT_DATA_UPDATING);
-		}	else if (status == STATUS_OK_GAME_UPDATE_COMPLETED || status == STATUS_OK_EMPTY_DATASET) {  // TODO do something special on empty dataset
-			Tabset_Event(TABEVENT_DATA_UPDATED);
-		}	else if (status >= STATUS_ERR) {
-			Tabset_Event(TABEVENT_DATA_UPDATE_ERROR);
-		}
-		return FALSE;
-	}
-	return TRUE;
-}
-
-_declspec(dllexport) BOOL _cdecl BCP_OnNotification(ServerOutputNotificationType son, const char *msg, const char *user, INT nGame, const char *fullLine) {
-	(void)son;
-	(void)msg;
-	(void)user;
-	(void)nGame;
-	(void)fullLine;
-
-	return TRUE;
-}
-
-_declspec(dllexport) BOOL _cdecl BCP_OnRequest(ServerOutputRequestType sor, const char *msg, const char *fullLine)
-{
-	(void)sor;
-	(void)msg;
-	(void)fullLine;
-	return TRUE;
-}
-
-_declspec(dllexport) BOOL _cdecl BCP_EnumInfoTabGUIDs(int index, GUID* pGUID, const char** strTitle, HBITMAP* pHBmp)
-{
+_declspec(dllexport) BOOL _cdecl BCP_EnumInfoTabGUIDs(int index, GUID* pGUID, const char** strTitle, HBITMAP* pHBmp) {
 	switch(index)
 	{
 	case 0:
@@ -179,10 +98,8 @@ _declspec(dllexport) BOOL _cdecl BCP_EnumInfoTabGUIDs(int index, GUID* pGUID, co
 	}
 }
 
-_declspec(dllexport) HWND _cdecl BCP_CreateInfoTabWindow(const GUID* pGUID, HWND hWndParent)
-{
-	if (memcmp(pGUID, Tabset_GetGUID(), sizeof(GUID)) == 0)
-	{
+_declspec(dllexport) HWND _cdecl BCP_CreateInfoTabWindow(const GUID* pGUID, HWND hWndParent) {
+	if (memcmp(pGUID, Tabset_GetGUID(), sizeof(GUID)) == 0)	{
 		COLORREF bgColor;
 		COLORREF textColor;
 		Status_t status;
@@ -199,8 +116,7 @@ _declspec(dllexport) HWND _cdecl BCP_CreateInfoTabWindow(const GUID* pGUID, HWND
 }
 
 _declspec(dllexport) BOOL _cdecl BCP_OnChatMessage(ServerOuputChatType soc, const char* user, const char* titles, INT gameNum,
-												   INT chNum, const char* msg, const char* fullLine)
-{
+												   INT chNum, const char* msg, const char* fullLine) {
 	(void)titles;
 	(void)gameNum;
 	(void)msg;
@@ -217,8 +133,7 @@ _declspec(dllexport) BOOL _cdecl BCP_OnChatMessage(ServerOuputChatType soc, cons
 	return TRUE;
 }
 
-_declspec(dllexport) void _cdecl BCP_SetMenu(DWORD* nMenuItems,char*** strItems)
-{
+_declspec(dllexport) void _cdecl BCP_SetMenu(DWORD* nMenuItems,char*** strItems) {
 	static char* menus[]=
 	{
 		"Update",
@@ -239,8 +154,7 @@ _declspec(dllexport) BOOL _cdecl BCP_OnUpdateMenuStatus(DWORD nItem, BOOL* bChec
 	return TRUE;
 }
 
-_declspec(dllexport) void _cdecl BCP_OnMenuItem(DWORD nItem)
-{
+_declspec(dllexport) void _cdecl BCP_OnMenuItem(DWORD nItem) {
 	switch(nItem)
 	{
 	case 0: // Update
@@ -251,22 +165,29 @@ _declspec(dllexport) void _cdecl BCP_OnMenuItem(DWORD nItem)
 		break;
 	}
 }
+#endif
 
-_declspec(dllexport) void _cdecl BCP_OnPlayedGameResult(const char* strGameType, BOOL bRated, const char* strWhite, const char* strBlack,
-														const char* strResult)
-{
-	(void)strGameType;
-	(void)bRated;
-	(void)strWhite;
-	(void)strBlack;
-	(void)strResult;
+
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved) {
+  (void)lpReserved;
+  switch( fdwReason ) { 
+    case DLL_PROCESS_ATTACH: {
+      // TODO(crem) Move creation to BCP_Initialize
+      DisableThreadLibraryCalls(hinstDLL);
+      assert(!BabasChessPlugin::Get());
+      BabasChessPlugin* plugin = new TeamLeaguePlugin(hinstDLL);
+      BabasChessPlugin::SetBabasChessPlugin(plugin);
+      break;
+    }
+
+    case DLL_PROCESS_DETACH: {
+      BabasChessPlugin* plugin = BabasChessPlugin::Get();
+      if (plugin) {
+        delete plugin;
+        BabasChessPlugin::SetBabasChessPlugin(0);
+      }
+      break;
+    }
+  }
+  return TRUE;
 }
-
-_declspec(dllexport) void _cdecl BCP_OnRatingChange(const char* strRatingType, DWORD nOldRating, DWORD nNewRating)
-{
-	(void)strRatingType;
-	(void)nOldRating;
-	(void)nNewRating;
-}
-
-};
